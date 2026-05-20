@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "904187917197",
+    "project_id": "weekflow-ac880",
+    "storage_bucket": "weekflow-ac880.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:904187917197:android:791481a348a47f6a8743c4",
+        "android_client_info": {
+          "package_name": "com.example.flutter_application_1"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDhrZEciyn5kCJnFAHbIPYFPloYL5ax414"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
