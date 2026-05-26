@@ -1,27 +1,27 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import '../utils/estilos.dart';
 import 'register_screen.dart';
 import 'forgot_password_screen.dart';
 import 'home_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
-
   @override
   State<LoginScreen> createState() => _LoginScreenState();
 }
 
 class _LoginScreenState extends State<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
-  final _emailController = TextEditingController();
-  final _senhaController = TextEditingController();
+  final _emailCtrl = TextEditingController();
+  final _senhaCtrl = TextEditingController();
   bool _carregando = false;
-  bool _esconderSenha = true;
+  bool _esconder = true;
 
   @override
   void dispose() {
-    _emailController.dispose();
-    _senhaController.dispose();
+    _emailCtrl.dispose();
+    _senhaCtrl.dispose();
     super.dispose();
   }
 
@@ -30,14 +30,11 @@ class _LoginScreenState extends State<LoginScreen> {
     setState(() => _carregando = true);
     try {
       await FirebaseAuth.instance.signInWithEmailAndPassword(
-        email: _emailController.text.trim(),
-        password: _senhaController.text.trim(),
+        email: _emailCtrl.text.trim(),
+        password: _senhaCtrl.text.trim(),
       );
       if (mounted) {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (_) => const HomeScreen()),
-        );
+        Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const HomeScreen()));
       }
     } on FirebaseAuthException catch (e) {
       final msgs = {
@@ -46,214 +43,106 @@ class _LoginScreenState extends State<LoginScreen> {
         'invalid-credential': 'E-mail ou senha incorretos.',
         'too-many-requests': 'Muitas tentativas. Aguarde um pouco.',
       };
-      if (mounted) _erro(msgs[e.code] ?? 'Erro ao entrar. Tente novamente.');
+      if (mounted) mostrarErro(context, msgs[e.code] ?? 'Erro ao entrar.');
     } finally {
       if (mounted) setState(() => _carregando = false);
     }
   }
 
-  void _erro(String msg) {
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-      content: Text(msg),
-      backgroundColor: Colors.red.shade800,
-      behavior: SnackBarBehavior.floating,
-      margin: const EdgeInsets.all(16),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-    ));
-  }
-
   @override
   Widget build(BuildContext context) {
-    final altura = MediaQuery.of(context).size.height;
-
     return Scaffold(
-      backgroundColor: const Color(0xFF4C5FD5),
+      backgroundColor: kAzul,
       body: Column(
         children: [
-          // Topo colorido com identidade do app
+          // Topo colorido com logo centralizado
           SizedBox(
-            height: altura * 0.38,
+            height: MediaQuery.of(context).size.height * 0.38,
             child: SafeArea(
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(28, 24, 28, 0),
+              child: Center(
                 child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Container(
-                      width: 48,
-                      height: 48,
+                      width: 72,
+                      height: 72,
                       decoration: BoxDecoration(
                         color: Colors.white.withOpacity(0.2),
-                        borderRadius: BorderRadius.circular(14),
+                        borderRadius: BorderRadius.circular(20),
                       ),
-                      child: const Icon(
-                        Icons.calendar_view_week_rounded,
-                        color: Colors.white,
-                        size: 26,
-                      ),
+                      child: const Icon(Icons.calendar_view_week_rounded, color: Colors.white, size: 38),
                     ),
-                    const Spacer(),
+                    const SizedBox(height: 16),
                     const Text(
                       'WeekFlow',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 34,
-                        fontWeight: FontWeight.bold,
-                        letterSpacing: 0.5,
-                      ),
+                      style: TextStyle(color: Colors.white, fontSize: 34, fontWeight: FontWeight.bold, letterSpacing: 0.5),
                     ),
                     const SizedBox(height: 6),
                     Text(
                       'Sua semana, organizada.',
-                      style: TextStyle(
-                        color: Colors.white.withOpacity(0.75),
-                        fontSize: 15,
-                      ),
+                      style: TextStyle(color: Colors.white.withOpacity(0.75), fontSize: 15),
                     ),
-                    const SizedBox(height: 32),
                   ],
                 ),
               ),
             ),
           ),
 
-          // Card branco que sobe por cima do fundo colorido
-          Expanded(
-            child: Container(
-              decoration: const BoxDecoration(
-                color: Color(0xFFF7F8FC),
-                borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
-              ),
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.fromLTRB(24, 32, 24, 24),
-                child: Form(
-                  key: _formKey,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text(
-                        'Entrar na conta',
-                        style: TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                          color: Color(0xFF1A1A2E),
-                        ),
-                      ),
-                      const SizedBox(height: 6),
-                      Text(
-                        'Bem-vindo de volta!',
-                        style: TextStyle(fontSize: 14, color: Colors.grey.shade500),
-                      ),
-                      const SizedBox(height: 28),
+          // Card branco com formulário
+          cardBranco(
+            filho: Form(
+              key: _formKey,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text('Entrar na conta', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: kEscuro)),
+                  const SizedBox(height: 4),
+                  const Text('Bem-vindo de volta!', style: TextStyle(fontSize: 14, color: Color(0xFF999999))),
+                  const SizedBox(height: 28),
 
-                      // Campo e-mail
-                      _label('E-mail'),
-                      const SizedBox(height: 6),
-                      TextFormField(
-                        controller: _emailController,
-                        keyboardType: TextInputType.emailAddress,
-                        style: const TextStyle(fontSize: 15),
-                        decoration: _inputDecor('seu@email.com', Icons.email_outlined),
-                        validator: (v) {
-                          if (v == null || v.trim().isEmpty) return 'Informe o e-mail.';
-                          if (!v.contains('@')) return 'E-mail inválido.';
-                          return null;
-                        },
-                      ),
-                      const SizedBox(height: 18),
-
-                      // Campo senha
-                      _label('Senha'),
-                      const SizedBox(height: 6),
-                      TextFormField(
-                        controller: _senhaController,
-                        obscureText: _esconderSenha,
-                        style: const TextStyle(fontSize: 15),
-                        decoration: _inputDecor('••••••••', Icons.lock_outline).copyWith(
-                          suffixIcon: IconButton(
-                            icon: Icon(
-                              _esconderSenha ? Icons.visibility_off_outlined : Icons.visibility_outlined,
-                              color: Colors.grey.shade400,
-                              size: 20,
-                            ),
-                            onPressed: () => setState(() => _esconderSenha = !_esconderSenha),
-                          ),
-                        ),
-                        validator: (v) {
-                          if (v == null || v.isEmpty) return 'Informe a senha.';
-                          return null;
-                        },
-                      ),
-                      const SizedBox(height: 10),
-
-                      // Esqueci a senha alinhado à direita
-                      Align(
-                        alignment: Alignment.centerRight,
-                        child: GestureDetector(
-                          onTap: () => Navigator.push(context,
-                              MaterialPageRoute(builder: (_) => const ForgotPasswordScreen())),
-                          child: Text(
-                            'Esqueci minha senha',
-                            style: TextStyle(
-                              fontSize: 13,
-                              color: const Color(0xFF4C5FD5),
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 28),
-
-                      // Botão principal
-                      SizedBox(
-                        width: double.infinity,
-                        height: 52,
-                        child: _carregando
-                            ? const Center(child: CircularProgressIndicator())
-                            : ElevatedButton(
-                                onPressed: _entrar,
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: const Color(0xFF4C5FD5),
-                                  foregroundColor: Colors.white,
-                                  elevation: 0,
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(14),
-                                  ),
-                                  textStyle: const TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
-                                child: const Text('Entrar'),
-                              ),
-                      ),
-                      const SizedBox(height: 24),
-
-                      // Criar conta
-                      Center(
-                        child: GestureDetector(
-                          onTap: () => Navigator.push(context,
-                              MaterialPageRoute(builder: (_) => const RegisterScreen())),
-                          child: RichText(
-                            text: TextSpan(
-                              text: 'Não tem conta? ',
-                              style: TextStyle(color: Colors.grey.shade500, fontSize: 14),
-                              children: const [
-                                TextSpan(
-                                  text: 'Criar agora',
-                                  style: TextStyle(
-                                    color: Color(0xFF4C5FD5),
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
+                  label('E-mail'),
+                  const SizedBox(height: 6),
+                  TextFormField(
+                    controller: _emailCtrl,
+                    keyboardType: TextInputType.emailAddress,
+                    decoration: inputDecor('seu@email.com', Icons.email_outlined),
+                    validator: (v) => (v == null || !v.contains('@')) ? 'E-mail inválido.' : null,
                   ),
-                ),
+                  const SizedBox(height: 18),
+
+                  label('Senha'),
+                  const SizedBox(height: 6),
+                  TextFormField(
+                    controller: _senhaCtrl,
+                    obscureText: _esconder,
+                    decoration: inputDecor('••••••••', Icons.lock_outline).copyWith(
+                      suffixIcon: IconButton(
+                        icon: Icon(_esconder ? Icons.visibility_off_outlined : Icons.visibility_outlined, size: 20, color: const Color(0xFFBBBBBB)),
+                        onPressed: () => setState(() => _esconder = !_esconder),
+                      ),
+                    ),
+                    validator: (v) => (v == null || v.isEmpty) ? 'Informe a senha.' : null,
+                  ),
+                  const SizedBox(height: 10),
+
+                  Align(
+                    alignment: Alignment.centerRight,
+                    child: GestureDetector(
+                      onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ForgotPasswordScreen())),
+                      child: const Text('Esqueci minha senha', style: TextStyle(fontSize: 13, color: kAzul, fontWeight: FontWeight.w500)),
+                    ),
+                  ),
+                  const SizedBox(height: 28),
+
+                  _carregando
+                      ? const Center(child: CircularProgressIndicator())
+                      : ElevatedButton(onPressed: _entrar, style: botaoPrincipal(), child: const Text('Entrar')),
+                  const SizedBox(height: 24),
+
+                  Center(child: rodapeNavegacao('Não tem conta? ', 'Criar agora', () {
+                    Navigator.push(context, MaterialPageRoute(builder: (_) => const RegisterScreen()));
+                  })),
+                ],
               ),
             ),
           ),
@@ -261,42 +150,4 @@ class _LoginScreenState extends State<LoginScreen> {
       ),
     );
   }
-
-  Widget _label(String texto) => Text(
-        texto,
-        style: const TextStyle(
-          fontSize: 13,
-          fontWeight: FontWeight.w600,
-          color: Color(0xFF1A1A2E),
-        ),
-      );
-
-  InputDecoration _inputDecor(String hint, IconData icone) => InputDecoration(
-        hintText: hint,
-        hintStyle: TextStyle(color: Colors.grey.shade400, fontSize: 14),
-        prefixIcon: Icon(icone, size: 18, color: Colors.grey.shade400),
-        filled: true,
-        fillColor: Colors.white,
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: Colors.grey.shade200),
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: Colors.grey.shade200),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: Color(0xFF4C5FD5), width: 1.5),
-        ),
-        errorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: Colors.redAccent),
-        ),
-        focusedErrorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: Colors.redAccent, width: 1.5),
-        ),
-      );
 }
